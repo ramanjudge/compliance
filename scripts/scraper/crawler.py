@@ -4,8 +4,8 @@ import time
 import sys
 from bs4 import BeautifulSoup
 
-API_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'http://localhost:3000') + '/api/ingest'
-API_SECRET = os.environ.get('API_SECRET', 'super-secret-crawler-key-2026')
+API_URL = (os.environ.get('NEXT_PUBLIC_API_URL') or 'http://localhost:3000').rstrip('/') + '/api/ingest'
+API_SECRET = os.environ.get('API_SECRET') or 'super-secret-crawler-key-2026'
 TARGET_STATE = os.environ.get('TARGET_STATE', 'dl') # Default to Delhi
 
 # Trigger automated workflow on push
@@ -66,12 +66,14 @@ def push_to_api(payload):
     print(f"Pushing {payload['skillLevel']} wage data to {API_URL}...")
     try:
         res = requests.post(API_URL, json=payload, headers=headers)
-        if res.status_code == 201:
-            print(f"✅ Success! Ingested as {res.json()['id']}")
+        if res.status_code in [200, 201]:
+            print(f"✅ Success! Response: {res.json()}")
         else:
             print(f"❌ Failed: {res.status_code} - {res.text}")
+            sys.exit(1)
     except Exception as e:
         print(f"❌ Request failed: {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     print(f"Starting Crawler for State ID: {TARGET_STATE}")
