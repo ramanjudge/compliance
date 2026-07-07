@@ -1,0 +1,15 @@
+name = "minimum-wage-tracker"
+compatibility_date = "2024-03-20"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = ".next"
+account_id = "d77050ddd1841d1602ce1b9aaacba5ce"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "wages_db"
+database_id = "xxxx-xxxx-xxxx"
+migrations_dir = "drizzle"
+
+[[r2_buckets]]
+binding = "R2_STORAGE"
+bucket_name = "wages-pdf-storage"

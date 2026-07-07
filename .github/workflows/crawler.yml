@@ -1,0 +1,52 @@
+name: Automated Wage Crawler
+
+on:
+  schedule:
+    # Run at 2:00 AM UTC every day
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      target_state:
+        description: 'State ID to crawl (e.g., dl, hr, up, ka)'
+        required: true
+        default: 'dl'
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: pip install -r scripts/scraper/requirements.txt
+
+      - name: Run Crawler
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          API_SECRET: ${{ secrets.API_SECRET }}
+          # Use manual input if dispatched, else run default scheduled logic
+          TARGET_STATE: ${{ github.event.inputs.target_state || 'dl' }}
+        run: python scripts/scraper/crawler.py
+
+      - name: Send Failure Notification via Resend
+        if: failure()
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: |
+          curl -X POST https://api.resend.com/emails \
+            -H "Authorization: Bearer $RESEND_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "from": "onboarding@resend.dev",
+              "to": ["judge.raman@gmail.com", "raman@ramanjudge.com"],
+              "subject": "🚨 Wage Crawler Failed!",
+              "html": "<strong>Alert:</strong> The automated web crawler for Minimum Wages has failed during its recent run. Please check the GitHub Actions logs."
+            }'
