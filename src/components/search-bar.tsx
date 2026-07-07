@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition, useEffect } from 'react';
-import { Search } from 'lucide-react';
+import { Search } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { searchWages } from '@/app/actions';
 import Link from 'next/link';

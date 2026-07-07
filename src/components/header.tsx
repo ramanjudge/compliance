@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ShieldAlert } from 'lucide-react';
+import { ShieldAlert } from '@/components/icons';
 
 export function Header() {
   return (

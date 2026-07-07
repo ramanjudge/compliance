@@ -1,6 +1,6 @@
 import { getWagesByStateSlug, getStates } from "@/app/actions";
 import { notFound } from "next/navigation";
-import { FileText, Calendar, ExternalLink } from "lucide-react";
+import { FileText, Calendar, ExternalLink } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 
 export async function generateStaticParams() {

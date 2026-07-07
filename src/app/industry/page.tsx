@@ -1,6 +1,6 @@
 import { getIndustries } from "@/app/actions";
 import Link from "next/link";
-import { ArrowRight, Building2 } from "lucide-react";
+import { ArrowRight, Building2 } from "@/components/icons";
 
 export default async function IndustryIndex() {
   const industries = await getIndustries();

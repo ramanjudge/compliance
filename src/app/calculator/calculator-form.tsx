@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getWagesByStateSlug } from '@/app/actions';
 import { Button } from '@/components/ui/button';
-import { Calculator } from 'lucide-react';
+import { Calculator } from '@/components/icons';
 
 export function SalaryCalculatorForm({ states }: { states: any[] }) {
   const [selectedState, setSelectedState] = useState('');

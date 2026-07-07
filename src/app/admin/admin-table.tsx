@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { publishWage, deleteWage, uploadPdfToR2 } from '@/app/actions';
 import { Button } from '@/components/ui/button';
-import { Check, Trash2, Upload } from 'lucide-react';
+import { Check, Trash2, Upload } from '@/components/icons';
 
 export function AdminTable({ initialWages }: { initialWages: any[] }) {
   const [wages, setWages] = useState(initialWages);

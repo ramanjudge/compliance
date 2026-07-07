@@ -1,6 +1,6 @@
 import { getStates } from "@/app/actions";
 import Link from "next/link";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight, MapPin } from "@/components/icons";
 
 export default async function StatesIndex() {
   const states = await getStates();

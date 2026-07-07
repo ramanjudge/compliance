@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, MapPin, Building2, UserCircle } from "lucide-react";
+import { ArrowRight, MapPin, Building2, UserCircle } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { SearchBar } from "@/components/search-bar";
 

@@ -1,6 +1,6 @@
 import { getWagesByIndustry, getIndustries } from "@/app/actions";
 import { notFound } from "next/navigation";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink } from "@/components/icons";
 import Link from "next/link";
 
 export async function generateStaticParams() {
