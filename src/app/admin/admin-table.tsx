@@ -69,7 +69,8 @@ export function AdminTable({ initialWages }: { initialWages: any[] }) {
             variant="default" 
             size="sm"
             onClick={() => {
-              const state = (document.getElementById('crawler-state-select') as HTMLSelectElement).value;
+              const select = document.getElementById('crawler-state-select') as HTMLSelectElement | null;
+              const state = select ? select.value : 'dl';
               alert(`Action queued: The Python crawler will now run for ${state.toUpperCase()} via GitHub Actions!`);
             }}
           >
