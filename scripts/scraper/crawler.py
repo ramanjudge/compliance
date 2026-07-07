@@ -8,6 +8,8 @@ API_URL = os.environ.get('NEXT_PUBLIC_API_URL', 'http://localhost:3000') + '/api
 API_SECRET = os.environ.get('API_SECRET', 'super-secret-crawler-key-2026')
 TARGET_STATE = os.environ.get('TARGET_STATE', 'dl') # Default to Delhi
 
+# Trigger automated workflow on push
+
 def scrape_delhi_wages():
     """
     Simulated scraper for Delhi Minimum Wages.

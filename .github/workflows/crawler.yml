@@ -1,6 +1,9 @@
 name: Automated Wage Crawler
 
 on:
+  push:
+    paths:
+      - 'scripts/scraper/**'
   schedule:
     # Run at 2:00 AM UTC every day
     - cron: '0 2 * * *'
