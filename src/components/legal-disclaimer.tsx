@@ -32,7 +32,7 @@ export function LegalDisclaimer() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="sm:max-w-md [&>button]:hidden" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+      <DialogContent className="sm:max-w-md [&>button]:hidden" {...{ onInteractOutside: (e: any) => e.preventDefault(), onEscapeKeyDown: (e: any) => e.preventDefault() } as any}>
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">Important Legal Notice</DialogTitle>
           <DialogDescription className="pt-4 text-base leading-relaxed text-foreground/80">
