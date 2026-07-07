@@ -134,7 +134,7 @@ export async function getWagesByIndustry(industryName: string) {
 }
 
 // ADMIN ACTIONS
-import { getRequestContext } from '@cloudflare/next-on-pages';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { revalidatePath } from 'next/cache';
 
 export async function getPendingWages() {
@@ -181,7 +181,7 @@ export async function uploadPdfToR2(formData: FormData) {
     throw new Error('File and Wage ID are required');
   }
 
-  const r2 = getRequestContext().env.R2_STORAGE;
+  const r2 = getCloudflareContext().env.R2_STORAGE;
   const fileExtension = file.name.split('.').pop() || 'pdf';
   const objectKey = `pdfs/${wageId}-${Date.now()}.${fileExtension}`;
   
