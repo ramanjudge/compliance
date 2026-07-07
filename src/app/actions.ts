@@ -116,9 +116,7 @@ export async function getWagesByIndustry(industryName: string) {
       sourceUrl: wages.sourceUrl,
       stateName: states.name,
       stateSlug: states.slug,
-      id: states.id,
-      name: states.name,
-      slug: states.slug,
+
       updateFrequency: states.updateFrequency,
       wageCodeStatus: states.wageCodeStatus,
     })
