@@ -2,7 +2,9 @@ import type { NextConfig } from "next";
 import { setupDevPlatform } from "@cloudflare/next-on-pages/next-dev";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@base-ui/react', 'drizzle-orm'],
+  },
 };
 
 if (process.env.NODE_ENV === "development") {
