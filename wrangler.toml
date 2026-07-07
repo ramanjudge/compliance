@@ -12,3 +12,7 @@ migrations_dir = "drizzle"
 [[r2_buckets]]
 binding = "R2_STORAGE"
 bucket_name = "wages-pdf-storage"
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
