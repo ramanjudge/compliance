@@ -39,17 +39,19 @@ def scrape_delhi_wages():
         print(f"Network error while scraping Delhi portal: {e}")
     
     print("Parsing tabular data...")
-    # REAL Delhi Minimum Wages (Effective October 2024 onwards)
+    # REAL Delhi Minimum Wages (Effective April 2025 onwards)
+    effective_time = int(time.mktime(time.strptime("2025-04-01", "%Y-%m-%d"))) * 1000
     scraped_data = [
+        # All Scheduled Employments
         {
             "stateSlug": "delhi",
             "industry": "All Scheduled Employments",
             "skillLevel": "Unskilled",
             "category": "General",
-            "basicWage": 17494.00,
-            "vda": 2352.00, # Basic + VDA = 19846
-            "totalMonthly": 19846.00,
-            "effectiveFrom": int(time.mktime(time.strptime("2024-10-01", "%Y-%m-%d"))) * 1000,
+            "basicWage": 18066.00,
+            "vda": 390.00,
+            "totalMonthly": 18456.00,
+            "effectiveFrom": effective_time,
             "sourceUrl": source_url
         },
         {
@@ -57,10 +59,10 @@ def scrape_delhi_wages():
             "industry": "All Scheduled Employments",
             "skillLevel": "Semi-Skilled",
             "category": "General",
-            "basicWage": 19279.00,
-            "vda": 2534.00, # Basic + VDA = 21813
-            "totalMonthly": 21813.00,
-            "effectiveFrom": int(time.mktime(time.strptime("2024-10-01", "%Y-%m-%d"))) * 1000,
+            "basicWage": 19929.00,
+            "vda": 442.00,
+            "totalMonthly": 20371.00,
+            "effectiveFrom": effective_time,
             "sourceUrl": source_url
         },
         {
@@ -68,10 +70,45 @@ def scrape_delhi_wages():
             "industry": "All Scheduled Employments",
             "skillLevel": "Skilled",
             "category": "General",
-            "basicWage": 21215.00,
-            "vda": 2690.00, # Basic + VDA = 23905
-            "totalMonthly": 23905.00,
-            "effectiveFrom": int(time.mktime(time.strptime("2024-10-01", "%Y-%m-%d"))) * 1000,
+            "basicWage": 21917.00,
+            "vda": 494.00,
+            "totalMonthly": 22411.00,
+            "effectiveFrom": effective_time,
+            "sourceUrl": source_url
+        },
+        
+        # Clerical and Supervisory Staff
+        {
+            "stateSlug": "delhi",
+            "industry": "Clerical and Supervisory Staff",
+            "skillLevel": "Non-matriculate",
+            "category": "Clerical",
+            "basicWage": 19929.00,
+            "vda": 442.00,
+            "totalMonthly": 20371.00,
+            "effectiveFrom": effective_time,
+            "sourceUrl": source_url
+        },
+        {
+            "stateSlug": "delhi",
+            "industry": "Clerical and Supervisory Staff",
+            "skillLevel": "Matriculate but not Graduate",
+            "category": "Clerical",
+            "basicWage": 21917.00,
+            "vda": 494.00,
+            "totalMonthly": 22411.00,
+            "effectiveFrom": effective_time,
+            "sourceUrl": source_url
+        },
+        {
+            "stateSlug": "delhi",
+            "industry": "Clerical and Supervisory Staff",
+            "skillLevel": "Graduate and above",
+            "category": "Clerical",
+            "basicWage": 23836.00,
+            "vda": 520.00,
+            "totalMonthly": 24356.00,
+            "effectiveFrom": effective_time,
             "sourceUrl": source_url
         }
     ]
