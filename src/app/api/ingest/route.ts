@@ -2,8 +2,6 @@ import { NextResponse } from 'next/server';
 import { getDb } from '@/db/client';
 import { wages, states } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
-import { crypto } from 'crypto';
-
 // In production, use environment variables for this API key.
 // Here we hardcode for MVP simplicity and testability.
 const API_SECRET = 'super-secret-crawler-key-2026';
