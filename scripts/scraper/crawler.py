@@ -130,10 +130,78 @@ def scrape_delhi_wages():
             
     except Exception as e:
         print(f"❌ Network error while scraping Delhi portal: {e}")
-        print("⚠️ Indian Gov sites often block GitHub Actions IPs. Falling back to known latest PDF...")
-        # Fallback to the exact PDF you provided earlier to ensure AI testing works
-        fallback_pdf = "https://labour.delhi.gov.in/sites/default/files/Labour/generic_multiple_files/da15april2025.pdf"
-        return extract_wages_with_gemini(fallback_pdf, 'delhi')
+        print("⚠️ Indian Gov sites are aggressively geo-blocking GitHub Actions.")
+        print("⚠️ Falling back to local copy of the PDF (da15april2025.pdf)...")
+        
+        # Since the network is blocked, we will upload the local copy of the PDF to Gemini directly.
+        local_pdf_path = "scripts/scraper/da15april2025.pdf"
+        
+        if not os.path.exists(local_pdf_path):
+            print("❌ Local fallback PDF not found.")
+            return []
+            
+        print("Uploading local PDF to Gemini for native OCR processing...")
+        try:
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            uploaded_file = client.files.upload(file=local_pdf_path)
+        except Exception as upload_e:
+            print(f"❌ Local PDF upload to Gemini failed: {upload_e}")
+            return []
+            
+        print(f"File uploaded as {uploaded_file.name}. Sending to Gemini for intelligence extraction...")
+        
+        prompt = f"""
+        You are an expert Indian Labour Law compliance analyst.
+        Extract the minimum wage data from the following government notification document for the state of 'delhi'.
+        
+        Rules for extraction:
+        1. Identify all skill levels (e.g., Unskilled, Semi-skilled, Skilled, Highly Skilled).
+        2. Identify all categories/industries (e.g., "All Scheduled Employments", "Clerical and Supervisory Staff").
+        3. Identify zones if applicable (e.g., Zone A, Zone B). If none, return null.
+        4. Extract Basic Wage, VDA (Variable Dearness Allowance), and Total Monthly Wage as numbers.
+        5. Determine the effective date of these wages.
+        
+        Return ONLY a raw JSON array of objects matching this exact structure, with no markdown formatting or backticks:
+        [
+          {{
+            "stateSlug": "delhi",
+            "industry": "String (e.g. All Scheduled Employments)",
+            "skillLevel": "String",
+            "category": "String or null",
+            "zone": "String or null",
+            "basicWage": Number,
+            "vda": Number,
+            "totalMonthly": Number,
+            "effectiveFrom": Number (unix timestamp in milliseconds)
+          }}
+        ]
+        
+        PDF Document Attached.
+        """
+        
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[uploaded_file, prompt],
+            )
+            
+            json_str = response.text.strip()
+            if json_str.startswith('```json'):
+                json_str = json_str.split('```json')[1].split('```')[0].strip()
+            elif json_str.startswith('```'):
+                json_str = json_str.split('```')[1].strip()
+                
+            data = json.loads(json_str)
+            for item in data:
+                item['sourceUrl'] = "https://labour.delhi.gov.in/sites/default/files/Labour/generic_multiple_files/da15april2025.pdf"
+                
+            print(f"✅ Gemini successfully extracted {len(data)} wage records from local fallback!")
+            return data
+            
+        except Exception as parse_e:
+            print(f"❌ Failed to parse Gemini output: {parse_e}")
+            print("Raw output:", response.text if 'response' in locals() else "No response")
+            return []
 
 def push_to_api(payload):
     headers = {
