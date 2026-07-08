@@ -3,7 +3,6 @@ import requests
 import time
 import sys
 import json
-import fitz  # PyMuPDF
 from bs4 import BeautifulSoup
 from google import genai
 
