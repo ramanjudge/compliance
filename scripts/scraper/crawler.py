@@ -35,7 +35,7 @@ def extract_wages_with_gemini(pdf_url, state_slug):
     print("Uploading PDF to Gemini for native OCR processing...")
     try:
         client = genai.Client(api_key=GEMINI_API_KEY)
-        uploaded_file = client.files.upload(file=pdf_path)
+        uploaded_file = client.files.upload(pdf_path)
     except Exception as e:
         print(f"❌ PDF upload to Gemini failed: {e}")
         os.remove(pdf_path)
@@ -143,7 +143,7 @@ def scrape_delhi_wages():
         print("Uploading local PDF to Gemini for native OCR processing...")
         try:
             client = genai.Client(api_key=GEMINI_API_KEY)
-            uploaded_file = client.files.upload(file=local_pdf_path)
+            uploaded_file = client.files.upload(local_pdf_path)
         except Exception as upload_e:
             print(f"❌ Local PDF upload to Gemini failed: {upload_e}")
             return []
