@@ -25,50 +25,29 @@ STATE_MAP = {
 
 def find_gazette_pdf_url(state_slug, target_year):
     """
-    Uses Gemini Google Search Grounding to autonomously search the internet
+    Uses DuckDuckGo to autonomously search the internet
     for the latest Minimum Wage Gazette PDF for the target state and year.
     """
     state_name = STATE_MAP.get(state_slug, state_slug)
-    print(f"🔍 Using AI Agent to search for {target_year} Minimum Wage Gazette PDF for {state_name}...")
-    
-    if not GEMINI_API_KEY:
-        print("❌ GEMINI_API_KEY is missing. Cannot run AI search.")
-        return None
+    print(f"🔍 Using Open-Source Search to find {target_year} Minimum Wage Gazette PDF for {state_name}...")
 
-    for attempt in range(3):
-        try:
-            from google.genai import types
-            client = genai.Client(api_key=GEMINI_API_KEY)
-            
-            prompt = f"Search the web for the direct PDF URL of the latest Minimum Wage Gazette notification for the Indian state of '{state_name}' published in {target_year}. Return ONLY the direct URL to the .pdf file, and nothing else. If you absolutely cannot find a direct PDF URL, return 'NOT_FOUND'."
-            
-            response = client.models.generate_content(
-                model='gemini-2.5-flash',
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    tools=[{"google_search": {}}],
-                )
-            )
-            
-            result = response.text.strip()
-            
-            match = re.search(r'(https?://[^\s]+\.pdf)', result, re.IGNORECASE)
-            if match:
-                return match.group(1)
-            
-            print(f"⚠️ Search returned no PDF link: {result}")
-            return None
-            
-        except Exception as e:
-            if '429' in str(e):
-                print(f"⚠️ Rate limit hit. Waiting 45 seconds before retry {attempt + 1}/3...")
-                time.sleep(45)
-            else:
-                print(f"❌ Agent search failed: {e}")
-                return None
-    
-    print("❌ Agent search failed after 3 attempts due to rate limits.")
-    return None
+    try:
+        from duckduckgo_search import DDGS
+        
+        query = f"Minimum Wage Gazette {target_year} {state_name} filetype:pdf"
+        results = DDGS().text(query, max_results=5)
+        
+        for res in results:
+            url = res.get('href', '')
+            if '.pdf' in url.lower():
+                return url
+                
+        print(f"⚠️ Search returned no PDF link for {state_name}")
+        return None
+        
+    except Exception as e:
+        print(f"❌ Search agent failed: {e}")
+        return None
 
 def extract_wages_with_gemini(pdf_url, state_slug):
     """
