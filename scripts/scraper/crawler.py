@@ -32,13 +32,16 @@ def find_gazette_pdf_url(state_slug, target_year):
     print(f"🔍 Using Open-Source Search to find {target_year} Minimum Wage Gazette PDF for {state_name}...")
 
     try:
-        from duckduckgo_search import DDGS
+        from googlesearch import search
         
         query = f"Minimum Wage Gazette {target_year} {state_name} filetype:pdf"
-        results = DDGS().text(query, max_results=5)
+        results = search(query, num_results=5, lang="en")
         
-        for res in results:
-            url = res.get('href', '')
+        # Convert generator to list if it is one
+        results = list(results)
+        print(f"DEBUG Google Search Results for {state_name}: {results}")
+        
+        for url in results:
             if '.pdf' in url.lower():
                 return url
                 

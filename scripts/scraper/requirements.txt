@@ -2,3 +2,4 @@ requests==2.31.0
 beautifulsoup4==4.12.3
 google-genai==0.4.0
 duckduckgo-search
+googlesearch-python==1.2.5
