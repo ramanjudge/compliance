@@ -1,7 +1,7 @@
 {
-  "/[[...slug]]/page": "app-edge-has-no-entrypoint",
+  "/_not-found/page": "app/_not-found/page.js",
   "/_global-error/page": "app/_global-error/page.js",
-  "/_not-found/page": "app-edge-has-no-entrypoint",
-  "/api/ingest/route": "app-edge-has-no-entrypoint",
-  "/favicon.ico/route": "app/favicon.ico/route.js"
+  "/api/ingest/route": "app/api/ingest/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/[[...slug]]/page": "app/[[...slug]]/page.js"
 }

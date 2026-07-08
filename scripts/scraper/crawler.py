@@ -35,33 +35,40 @@ def find_gazette_pdf_url(state_slug, target_year):
         print("❌ GEMINI_API_KEY is missing. Cannot run AI search.")
         return None
 
-    try:
-        from google.genai import types
-        client = genai.Client(api_key=GEMINI_API_KEY)
-        
-        prompt = f"Search the web for the direct PDF URL of the latest Minimum Wage Gazette notification for the Indian state of '{state_name}' published in {target_year}. Return ONLY the direct URL to the .pdf file, and nothing else. If you absolutely cannot find a direct PDF URL, return 'NOT_FOUND'."
-        
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                tools=[{"google_search": {}}],
+    for attempt in range(3):
+        try:
+            from google.genai import types
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            
+            prompt = f"Search the web for the direct PDF URL of the latest Minimum Wage Gazette notification for the Indian state of '{state_name}' published in {target_year}. Return ONLY the direct URL to the .pdf file, and nothing else. If you absolutely cannot find a direct PDF URL, return 'NOT_FOUND'."
+            
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    tools=[{"google_search": {}}],
+                )
             )
-        )
-        
-        result = response.text.strip()
-        
-        # Extract the URL cleanly just in case Gemini added chatter
-        match = re.search(r'(https?://[^\s]+\.pdf)', result, re.IGNORECASE)
-        if match:
-            return match.group(1)
-        
-        print(f"⚠️ Search returned no PDF link: {result}")
-        return None
-        
-    except Exception as e:
-        print(f"❌ Agent search failed: {e}")
-        return None
+            
+            result = response.text.strip()
+            
+            match = re.search(r'(https?://[^\s]+\.pdf)', result, re.IGNORECASE)
+            if match:
+                return match.group(1)
+            
+            print(f"⚠️ Search returned no PDF link: {result}")
+            return None
+            
+        except Exception as e:
+            if '429' in str(e):
+                print(f"⚠️ Rate limit hit. Waiting 45 seconds before retry {attempt + 1}/3...")
+                time.sleep(45)
+            else:
+                print(f"❌ Agent search failed: {e}")
+                return None
+    
+    print("❌ Agent search failed after 3 attempts due to rate limits.")
+    return None
 
 def extract_wages_with_gemini(pdf_url, state_slug):
     """
@@ -132,39 +139,47 @@ def extract_wages_with_gemini(pdf_url, state_slug):
     PDF Document Attached.
     """
     
-    try:
-        from google.genai import types
-        
-        # Wait for file to be processed
-        time.sleep(3)
-        
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',
-            contents=[
-                types.Part.from_uri(file_uri=uploaded_file.uri, mime_type='application/pdf'),
-                prompt
-            ],
-        )
-        
-        # Clean markdown if Gemini still includes it
-        json_str = response.text.strip()
-        if json_str.startswith('```json'):
-            json_str = json_str.split('```json')[1].split('```')[0].strip()
-        elif json_str.startswith('```'):
-            json_str = json_str.split('```')[1].strip()
+    for attempt in range(3):
+        try:
+            from google.genai import types
             
-        data = json.loads(json_str)
-        # Attach the source URL as the proof document
-        for item in data:
-            item['sourceUrl'] = pdf_url
+            # Wait for file to be processed
+            time.sleep(3)
             
-        print(f"🎉 Gemini successfully extracted {len(data)} wage records!")
-        return data
-        
-    except Exception as e:
-        print(f"❌ Failed to parse Gemini output: {e}")
-        print("Raw output:", response.text if 'response' in locals() else "No response")
-        return []
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=[
+                    types.Part.from_uri(file_uri=uploaded_file.uri, mime_type='application/pdf'),
+                    prompt
+                ],
+            )
+            
+            # Clean markdown if Gemini still includes it
+            json_str = response.text.strip()
+            if json_str.startswith('```json'):
+                json_str = json_str.split('```json')[1].split('```')[0].strip()
+            elif json_str.startswith('```'):
+                json_str = json_str.split('```')[1].strip()
+                
+            data = json.loads(json_str)
+            # Attach the source URL as the proof document
+            for item in data:
+                item['sourceUrl'] = pdf_url
+                
+            print(f"🎉 Gemini successfully extracted {len(data)} wage records!")
+            return data
+            
+        except Exception as e:
+            if '429' in str(e):
+                print(f"⚠️ Rate limit hit during extraction. Waiting 45 seconds before retry {attempt + 1}/3...")
+                time.sleep(45)
+            else:
+                print(f"❌ Failed to parse Gemini output: {e}")
+                print("Raw output:", response.text if 'response' in locals() else "No response")
+                return []
+    
+    print("❌ Extraction failed after 3 attempts due to rate limits.")
+    return []
 
 def push_to_api(payload):
     headers = {
@@ -213,9 +228,13 @@ if __name__ == '__main__':
             
         if not wage_data:
             print(f"⏭️ Skipping {state_slug} due to no data.")
+            time.sleep(15)
             continue
             
         for item in wage_data:
             push_to_api(item)
+            
+        print("⏳ Waiting 15 seconds to respect Gemini Free Tier rate limits...")
+        time.sleep(15)
             
     print("\n🏁 Crawler execution completed.")

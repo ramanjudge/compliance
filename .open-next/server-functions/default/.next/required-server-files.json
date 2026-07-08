@@ -223,8 +223,6 @@
       "turbopackPluginRuntimeStrategy": "childProcesses",
       "optimizePackageImports": [
         "lucide-react",
-        "@base-ui/react",
-        "drizzle-orm",
         "date-fns",
         "lodash-es",
         "ramda",
@@ -322,6 +320,8 @@
     ".next\\server\\functions-config-manifest.json",
     ".next\\server\\middleware-manifest.json",
     ".next\\server\\middleware-build-manifest.js",
+    ".next\\server\\middleware-react-loadable-manifest.js",
+    ".next\\react-loadable-manifest.json",
     ".next\\server\\app-paths-manifest.json",
     ".next\\app-path-routes-manifest.json",
     ".next\\server\\server-reference-manifest.js",
