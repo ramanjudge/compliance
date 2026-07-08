@@ -37,6 +37,7 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           API_SECRET: ${{ secrets.API_SECRET }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SCRAPER_API_KEY: ${{ secrets.SCRAPER_API_KEY }}
           TARGET_STATE: ${{ github.event.inputs.target_state }}
           TARGET_YEAR: ${{ github.event.inputs.target_year }}
           IS_BACKFILL: 'true'

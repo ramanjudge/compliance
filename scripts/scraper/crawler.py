@@ -81,18 +81,26 @@ def extract_wages_with_gemini(pdf_url, state_slug):
         
     print(f"📥 Downloading PDF from {pdf_url}...")
     try:
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
-        res = requests.get(pdf_url, headers=headers, timeout=30)
-        res.raise_for_status()
+        SCRAPER_API_KEY = os.environ.get('SCRAPER_API_KEY')
+        if SCRAPER_API_KEY:
+            print("🌐 Routing download through ScraperAPI Proxy to bypass geo-blocking...")
+            import urllib.parse
+            proxy_url = f"http://api.scraperapi.com?api_key={SCRAPER_API_KEY}&url={urllib.parse.quote(pdf_url)}&render=false"
+            pdf_response = requests.get(proxy_url, timeout=90)
+        else:
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            }
+            pdf_response = requests.get(pdf_url, headers=headers, timeout=30)
+            
+        pdf_response.raise_for_status()
     except Exception as e:
         print(f"❌ Failed to download PDF: {e}")
         return []
 
     pdf_path = f"{state_slug}_temp.pdf"
     with open(pdf_path, 'wb') as f:
-        f.write(res.content)
+        f.write(pdf_response.content)
         
     print("🧠 Uploading PDF to Gemini for native OCR and Intelligence Extraction...")
     try:
