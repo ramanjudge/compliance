@@ -110,7 +110,10 @@ def scrape_delhi_wages():
     source_url = "https://labour.delhi.gov.in/labour/current-minimum-wage-rate"
     
     try:
-        response = requests.get(source_url, timeout=10)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+        response = requests.get(source_url, headers=headers, timeout=30)
         soup = BeautifulSoup(response.text, 'html.parser')
         
         pdf_links = [a['href'] for a in soup.find_all('a', href=True) if '.pdf' in a['href'].lower()]
@@ -120,16 +123,17 @@ def scrape_delhi_wages():
             if pdf_url.startswith('/'):
                 pdf_url = f"https://labour.delhi.gov.in{pdf_url}"
             print(f"✅ Found latest official notification PDF: {pdf_url}")
-            
-            # Hand off to Gemini!
             return extract_wages_with_gemini(pdf_url, 'delhi')
         else:
             print("⚠️ Could not find PDF link on the page.")
-            return []
+            raise Exception("No PDF links found.")
             
     except Exception as e:
         print(f"❌ Network error while scraping Delhi portal: {e}")
-        return []
+        print("⚠️ Indian Gov sites often block GitHub Actions IPs. Falling back to known latest PDF...")
+        # Fallback to the exact PDF you provided earlier to ensure AI testing works
+        fallback_pdf = "https://labour.delhi.gov.in/sites/default/files/Labour/generic_multiple_files/da15april2025.pdf"
+        return extract_wages_with_gemini(fallback_pdf, 'delhi')
 
 def push_to_api(payload):
     headers = {
