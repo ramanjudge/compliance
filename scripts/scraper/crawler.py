@@ -40,7 +40,7 @@ def find_gazette_pdf_url(state_slug, target_year):
             from google.genai import types
             client = genai.Client(api_key=GEMINI_API_KEY)
             
-            prompt = f"Search the web for the direct PDF URL of the latest Minimum Wage Gazette notification for the Indian state of '{state_name}' published in {target_year}. Return ONLY the direct URL to the .pdf file, and nothing else. If you absolutely cannot find a direct PDF URL, return 'NOT_FOUND'."
+            prompt = f"Search the web for the direct PDF URL of the latest Minimum Wage Gazette notification for the Indian state of '{state_name}' published in {target_year}. STRICT RULE: Only search within official government domains by appending 'site:.gov.in OR site:.nic.in' to your internal search query. Return ONLY the direct URL to the .pdf file, and nothing else. If you absolutely cannot find a direct PDF URL on an official government site, return 'NOT_FOUND'."
             
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
