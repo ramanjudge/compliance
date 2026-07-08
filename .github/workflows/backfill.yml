@@ -1,0 +1,46 @@
+name: Historical Gazette Backfill
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_year:
+        description: 'Year to backfill (e.g., 2024, 2023)'
+        required: true
+        default: '2024'
+      target_state:
+        description: 'State ID to crawl (e.g., dl, hr) or "all"'
+        required: true
+        default: 'all'
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        state_batch: ['batch_1', 'batch_2', 'batch_3', 'batch_4']
+      max-parallel: 1
+      fail-fast: false
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: pip install -r scripts/scraper/requirements.txt
+
+      - name: Run Historical Backfill
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          API_SECRET: ${{ secrets.API_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # Use manual input if dispatched
+          TARGET_STATE: ${{ github.event.inputs.target_state == 'all' && matrix.state_batch || github.event.inputs.target_state }}
+          TARGET_YEAR: ${{ github.event.inputs.target_year }}
+          IS_BACKFILL: 'true'
+        run: python scripts/scraper/crawler.py

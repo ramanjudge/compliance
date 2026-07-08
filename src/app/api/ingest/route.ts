@@ -47,14 +47,14 @@ export async function POST(request: Request) {
     const stateId = stateRecord[0].id;
 
     // 3.5 Deduplication Check
-    // Check if an identical wage record already exists (regardless of whether it's published or pending)
+    // Check if an identical wage record already exists (based on state, industry, skill, and dates)
     const existingWage = await db.select({ id: wages.id }).from(wages).where(
       and(
         eq(wages.stateId, stateId),
         eq(wages.industry, industry),
         eq(wages.skillLevel, skillLevel),
-        eq(wages.basicWage, basicWage),
-        eq(wages.vda, vda || 0)
+        eq(wages.effectiveFrom, effectiveFrom ? new Date(effectiveFrom) : new Date()),
+        notificationDate ? eq(wages.notificationDate, new Date(notificationDate)) : undefined
       )
     ).limit(1);
 

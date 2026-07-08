@@ -5,18 +5,23 @@ on:
     paths:
       - 'scripts/scraper/**'
   schedule:
-    # Run at 2:00 AM UTC every day
-    - cron: '0 2 * * *'
+    # Run at 2:00 AM UTC every Monday (Weekly)
+    - cron: '0 2 * * 1'
   workflow_dispatch:
     inputs:
       target_state:
-        description: 'State ID to crawl (e.g., dl, hr, up, ka)'
+        description: 'State ID to crawl (e.g., dl, hr, up, ka) or "all"'
         required: true
-        default: 'dl'
+        default: 'all'
 
 jobs:
   crawl:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        state_batch: ['batch_1', 'batch_2', 'batch_3', 'batch_4']
+      max-parallel: 1
+      fail-fast: false
 
     steps:
       - name: Check out repository
@@ -36,8 +41,8 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           API_SECRET: ${{ secrets.API_SECRET }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # Use manual input if dispatched, else run default scheduled logic
-          TARGET_STATE: ${{ github.event.inputs.target_state || 'dl' }}
+          # Use manual input if dispatched, else run matrix batch
+          TARGET_STATE: ${{ github.event.inputs.target_state || matrix.state_batch }}
         run: python scripts/scraper/crawler.py
 
       - name: Send Failure Notification via Resend

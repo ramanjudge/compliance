@@ -138,7 +138,12 @@ export function AdminTable({ initialWages }: { initialWages: any[] }) {
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  {new Date(wage.effectiveFrom).toLocaleDateString('en-IN')}
+                  <div className="font-semibold">{new Date(wage.effectiveFrom).toLocaleDateString('en-IN')}</div>
+                  {wage.notificationDate && (
+                    <div className="text-muted-foreground text-xs mt-1" title="Publish Date">
+                      Pub: {new Date(wage.notificationDate).toLocaleDateString('en-IN')}
+                    </div>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-right font-bold text-primary">
                   ₹{wage.totalMonthly?.toFixed(2)}

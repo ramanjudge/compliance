@@ -55,7 +55,8 @@ def extract_wages_with_gemini(pdf_url, state_slug):
     2. Identify all categories/industries (e.g., "All Scheduled Employments", "Clerical and Supervisory Staff").
     3. Identify zones if applicable (e.g., Zone A, Zone B). If none, return null.
     4. Extract Basic Wage, VDA (Variable Dearness Allowance), and Total Monthly Wage as numbers.
-    5. Determine the effective date of these wages.
+    5. Determine the effective date of these wages (effectiveFrom).
+    6. Determine the notification or publish date of this document (notificationDate).
     
     Return ONLY a raw JSON array of objects matching this exact structure, with no markdown formatting or backticks:
     [
@@ -68,7 +69,8 @@ def extract_wages_with_gemini(pdf_url, state_slug):
         "basicWage": Number,
         "vda": Number,
         "totalMonthly": Number,
-        "effectiveFrom": Number (unix timestamp in milliseconds)
+        "effectiveFrom": Number (unix timestamp in milliseconds),
+        "notificationDate": Number (unix timestamp in milliseconds, or null if not found)
       }}
     ]
     
@@ -167,7 +169,8 @@ def scrape_delhi_wages():
         2. Identify all categories/industries (e.g., "All Scheduled Employments", "Clerical and Supervisory Staff").
         3. Identify zones if applicable (e.g., Zone A, Zone B). If none, return null.
         4. Extract Basic Wage, VDA (Variable Dearness Allowance), and Total Monthly Wage as numbers.
-        5. Determine the effective date of these wages.
+        5. Determine the effective date of these wages (effectiveFrom).
+        6. Determine the notification or publish date of this document (notificationDate).
         
         Return ONLY a raw JSON array of objects matching this exact structure, with no markdown formatting or backticks:
         [
@@ -180,7 +183,8 @@ def scrape_delhi_wages():
             "basicWage": Number,
             "vda": Number,
             "totalMonthly": Number,
-            "effectiveFrom": Number (unix timestamp in milliseconds)
+            "effectiveFrom": Number (unix timestamp in milliseconds),
+            "notificationDate": Number (unix timestamp in milliseconds, or null if not found)
           }}
         ]
         
@@ -237,23 +241,39 @@ def push_to_api(payload):
         print(f"❌ Request failed: {e}")
         sys.exit(1)
 
-if __name__ == "__main__":
-    print(f"Starting AI Crawler for State ID: {TARGET_STATE}")
+if __name__ == '__main__':
+    target = os.environ.get('TARGET_STATE', 'dl')
     
-    data_to_push = []
+    # Define matrix batches to prevent rate limits
+    BATCHES = {
+        'batch_1': ['dl', 'hr', 'up', 'ka', 'mh', 'tn', 'tg', 'gj', 'wb'],
+        'batch_2': ['pb', 'rj', 'br', 'mp', 'kl', 'ap', 'ar', 'as', 'cg'],
+        'batch_3': ['ga', 'hp', 'jh', 'mn', 'ml', 'mz', 'nl', 'or', 'sk'],
+        'batch_4': ['tr', 'ut', 'an', 'ch', 'dn', 'jk', 'la', 'ld', 'py'],
+        'all': ['dl', 'hr', 'up', 'ka', 'mh', 'tn', 'tg', 'gj', 'wb', 'pb', 'rj', 'br', 'mp', 'kl', 'ap', 'ar', 'as', 'cg', 'ga', 'hp', 'jh', 'mn', 'ml', 'mz', 'nl', 'or', 'sk', 'tr', 'ut', 'an', 'ch', 'dn', 'jk', 'la', 'ld', 'py']
+    }
     
-    if TARGET_STATE == 'dl':
-        data_to_push = scrape_delhi_wages()
-    else:
-        print(f"⚠️ No crawler navigation logic implemented for {TARGET_STATE} yet. (Ready for AI scaling)")
-        sys.exit(0)
+    states_to_run = BATCHES.get(target, [target])
+    
+    print(f"Starting AI Crawler for targets: {states_to_run}")
+    
+    for state_slug in states_to_run:
+        print(f"\n--- Initiating crawl for State ID: {state_slug} ---")
         
-    if not data_to_push:
-        print("No data extracted. Exiting.")
-        sys.exit(1)
-        
-    for item in data_to_push:
-        push_to_api(item)
-        time.sleep(1) # Prevent rate limiting
-        
-    print("Crawler execution completed successfully.")
+        # Right now we only have the Delhi MVP fallback logic built.
+        # In Stage 2, this will hit egazette.gov.in using dynamic searches.
+        if state_slug == 'dl':
+            wage_data = scrape_delhi_wages()
+        else:
+            print(f"⚠️ Dynamic Gazette scraping for {state_slug} is under construction (Stage 2). Skipping.")
+            wage_data = []
+            
+        if not wage_data:
+            print(f"No data extracted for {state_slug}.")
+            continue
+            
+        for item in wage_data:
+            print(f"Pushing {item.get('skillLevel', 'Unknown')} wage data to API...")
+            push_to_api(item)
+            
+    print("\nCrawler execution completed.")
