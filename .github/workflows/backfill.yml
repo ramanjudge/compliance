@@ -43,4 +43,4 @@ jobs:
           TARGET_STATE: ${{ github.event.inputs.target_state == 'all' && matrix.state_batch || github.event.inputs.target_state }}
           TARGET_YEAR: ${{ github.event.inputs.target_year }}
           IS_BACKFILL: 'true'
-        run: python scripts/scraper/crawler.py
+        run: python -u scripts/scraper/crawler.py

@@ -43,7 +43,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # Use manual input if dispatched, else run matrix batch
           TARGET_STATE: ${{ github.event.inputs.target_state || matrix.state_batch }}
-        run: python scripts/scraper/crawler.py
+        run: python -u scripts/scraper/crawler.py
 
       - name: Send Failure Notification via Resend
         if: failure()
