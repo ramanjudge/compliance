@@ -76,9 +76,17 @@ def extract_wages_with_gemini(pdf_url, state_slug):
     """
     
     try:
+        from google.genai import types
+        
+        # Wait for file to be processed
+        time.sleep(3)
+        
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=[uploaded_file, prompt],
+            contents=[
+                types.Part.from_uri(file_uri=uploaded_file.uri, mime_type='application/pdf'),
+                prompt
+            ],
         )
         
         # Clean markdown if Gemini still includes it
@@ -180,9 +188,17 @@ def scrape_delhi_wages():
         """
         
         try:
+            from google.genai import types
+            
+            # Wait for file to be processed
+            time.sleep(3)
+            
             response = client.models.generate_content(
                 model='gemini-2.5-flash',
-                contents=[uploaded_file, prompt],
+                contents=[
+                    types.Part.from_uri(file_uri=uploaded_file.uri, mime_type='application/pdf'),
+                    prompt
+                ],
             )
             
             json_str = response.text.strip()
