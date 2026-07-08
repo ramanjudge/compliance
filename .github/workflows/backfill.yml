@@ -3,25 +3,23 @@ name: Historical Gazette Backfill
 on:
   workflow_dispatch:
     inputs:
+      target_state:
+        description: 'Target to crawl: State ID (e.g. dl), Batch ID (e.g. batch_1)'
+        required: true
+        default: 'batch_1'
       target_year:
-        description: 'Year to backfill (e.g., 2024, 2023)'
+        description: 'Year of the Gazette to backfill (e.g., 2024, 2023)'
         required: true
         default: '2024'
-      target_state:
-        description: 'State ID to crawl (e.g., dl, hr) or "all"'
-        required: true
-        default: 'all'
 
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        state_batch: ['batch_1', 'batch_2', 'batch_3', 'batch_4']
-      max-parallel: 1
-      fail-fast: false
 
     steps:
+      - name: Set up job
+        run: echo "Starting backfill job for ${{ github.event.inputs.target_state }} (Year ${{ github.event.inputs.target_year }})"
+
       - name: Check out repository
         uses: actions/checkout@v4
 
@@ -39,8 +37,7 @@ jobs:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           API_SECRET: ${{ secrets.API_SECRET }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # Use manual input if dispatched
-          TARGET_STATE: ${{ github.event.inputs.target_state == 'all' && matrix.state_batch || github.event.inputs.target_state }}
+          TARGET_STATE: ${{ github.event.inputs.target_state }}
           TARGET_YEAR: ${{ github.event.inputs.target_year }}
           IS_BACKFILL: 'true'
         run: python -u scripts/scraper/crawler.py

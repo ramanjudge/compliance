@@ -29,28 +29,46 @@ def find_gazette_pdf_url(state_slug, target_year):
     for the latest Minimum Wage Gazette PDF for the target state and year.
     """
     state_name = STATE_MAP.get(state_slug, state_slug)
-    print(f"🔍 Using Open-Source Search to find {target_year} Minimum Wage Gazette PDF for {state_name}...")
+    print(f"🔍 Using AI Agent to search for {target_year} Minimum Wage Gazette PDF for {state_name}...")
 
-    try:
-        from googlesearch import search
-        
-        query = f"Minimum Wage Gazette {target_year} {state_name} filetype:pdf"
-        results = search(query, num_results=5, lang="en")
-        
-        # Convert generator to list if it is one
-        results = list(results)
-        print(f"DEBUG Google Search Results for {state_name}: {results}")
-        
-        for url in results:
-            if '.pdf' in url.lower():
-                return url
-                
-        print(f"⚠️ Search returned no PDF link for {state_name}")
+    if not GEMINI_API_KEY:
+        print("❌ GEMINI_API_KEY is missing. Cannot run AI search.")
         return None
-        
-    except Exception as e:
-        print(f"❌ Search agent failed: {e}")
-        return None
+
+    for attempt in range(3):
+        try:
+            from google.genai import types
+            client = genai.Client(api_key=GEMINI_API_KEY)
+            
+            prompt = f"Search the web for the direct PDF URL of the latest Minimum Wage Gazette notification for the Indian state of '{state_name}' published in {target_year}. Return ONLY the direct URL to the .pdf file, and nothing else. If you absolutely cannot find a direct PDF URL, return 'NOT_FOUND'."
+            
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    tools=[{"google_search": {}}],
+                )
+            )
+            
+            result = response.text.strip()
+            
+            match = re.search(r'(https?://[^\s]+\.pdf)', result, re.IGNORECASE)
+            if match:
+                return match.group(1)
+            
+            print(f"⚠️ Search returned no PDF link: {result}")
+            return None
+            
+        except Exception as e:
+            if '429' in str(e):
+                print(f"⚠️ Rate limit hit. Waiting 45 seconds before retry {attempt + 1}/3...")
+                time.sleep(45)
+            else:
+                print(f"❌ Agent search failed: {e}")
+                return None
+    
+    print("❌ Agent search failed after 3 attempts due to rate limits.")
+    return None
 
 def extract_wages_with_gemini(pdf_url, state_slug):
     """
@@ -193,6 +211,27 @@ if __name__ == '__main__':
     }
     
     states_to_run = BATCHES.get(target, [target])
+    
+    if target == 'cron':
+        day_of_week = time.localtime().tm_wday # 0=Monday, 1=Tuesday, 2=Wednesday, 3=Thursday
+        if day_of_week == 0:
+            states_to_run = BATCHES['batch_1']
+            print(f"📅 Scheduled Cron Run (Monday) -> Selected batch_1")
+        elif day_of_week == 1:
+            states_to_run = BATCHES['batch_2']
+            print(f"📅 Scheduled Cron Run (Tuesday) -> Selected batch_2")
+        elif day_of_week == 2:
+            states_to_run = BATCHES['batch_3']
+            print(f"📅 Scheduled Cron Run (Wednesday) -> Selected batch_3")
+        elif day_of_week == 3:
+            states_to_run = BATCHES['batch_4']
+            print(f"📅 Scheduled Cron Run (Thursday) -> Selected batch_4")
+        else:
+            print(f"⏭️ Skipping scheduled run. Day {day_of_week} is not assigned a batch.")
+            sys.exit(0)
+    
+    if target == 'all':
+        print("⚠️ WARNING: Running 'all' states simultaneously will likely exceed the 20-request daily limit for Google Search Grounding!")
     
     print(f"🤖 Starting Agentic Crawler for targets: {states_to_run} (Year: {target_year})")
     
