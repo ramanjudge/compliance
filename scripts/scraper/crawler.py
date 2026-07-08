@@ -33,20 +33,19 @@ def extract_wages_with_gemini(pdf_url, state_slug):
     with open(pdf_path, 'wb') as f:
         f.write(res.content)
         
-    print("Extracting text from PDF using PyMuPDF...")
+    print("Uploading PDF to Gemini for native OCR processing...")
     try:
-        doc = fitz.open(pdf_path)
-        text = ""
-        for page in doc:
-            text += page.get_text()
-        doc.close()
-        os.remove(pdf_path)
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        uploaded_file = client.files.upload(file=pdf_path)
     except Exception as e:
-        print(f"❌ PDF extraction failed: {e}")
+        print(f"❌ PDF upload to Gemini failed: {e}")
+        os.remove(pdf_path)
         return []
         
-    print(f"Extracted {len(text)} characters. Sending to Gemini for intelligence extraction...")
-    client = genai.Client(api_key=GEMINI_API_KEY)
+    # Clean up local file immediately after upload
+    os.remove(pdf_path)
+    
+    print(f"File uploaded as {uploaded_file.name}. Sending to Gemini for intelligence extraction...")
     
     prompt = f"""
     You are an expert Indian Labour Law compliance analyst.
@@ -74,14 +73,13 @@ def extract_wages_with_gemini(pdf_url, state_slug):
       }}
     ]
     
-    PDF Text:
-    {text}
+    PDF Document Attached.
     """
     
     try:
         response = client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=prompt,
+            contents=[uploaded_file, prompt],
         )
         
         # Clean markdown if Gemini still includes it
