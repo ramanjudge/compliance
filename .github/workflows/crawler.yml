@@ -35,6 +35,7 @@ jobs:
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           API_SECRET: ${{ secrets.API_SECRET }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           # Use manual input if dispatched, else run default scheduled logic
           TARGET_STATE: ${{ github.event.inputs.target_state || 'dl' }}
         run: python scripts/scraper/crawler.py

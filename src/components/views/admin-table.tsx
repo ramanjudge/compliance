@@ -60,10 +60,46 @@ export function AdminTable({ initialWages }: { initialWages: any[] }) {
             id="crawler-state-select"
             className="h-9 rounded-md border border-input bg-background px-3 text-sm"
           >
-            <option value="dl">Delhi</option>
-            <option value="hr">Haryana</option>
-            <option value="up">Uttar Pradesh</option>
-            <option value="ka">Karnataka</option>
+            <optgroup label="States">
+              <option value="ap">Andhra Pradesh</option>
+              <option value="ar">Arunachal Pradesh</option>
+              <option value="as">Assam</option>
+              <option value="br">Bihar</option>
+              <option value="cg">Chhattisgarh</option>
+              <option value="ga">Goa</option>
+              <option value="gj">Gujarat</option>
+              <option value="hr">Haryana</option>
+              <option value="hp">Himachal Pradesh</option>
+              <option value="jh">Jharkhand</option>
+              <option value="ka">Karnataka</option>
+              <option value="kl">Kerala</option>
+              <option value="mp">Madhya Pradesh</option>
+              <option value="mh">Maharashtra</option>
+              <option value="mn">Manipur</option>
+              <option value="ml">Meghalaya</option>
+              <option value="mz">Mizoram</option>
+              <option value="nl">Nagaland</option>
+              <option value="or">Odisha</option>
+              <option value="pb">Punjab</option>
+              <option value="rj">Rajasthan</option>
+              <option value="sk">Sikkim</option>
+              <option value="tn">Tamil Nadu</option>
+              <option value="tg">Telangana</option>
+              <option value="tr">Tripura</option>
+              <option value="up">Uttar Pradesh</option>
+              <option value="ut">Uttarakhand</option>
+              <option value="wb">West Bengal</option>
+            </optgroup>
+            <optgroup label="Union Territories">
+              <option value="an">Andaman and Nicobar Islands</option>
+              <option value="ch">Chandigarh</option>
+              <option value="dn">Dadra and Nagar Haveli and Daman and Diu</option>
+              <option value="dl">Delhi</option>
+              <option value="jk">Jammu and Kashmir</option>
+              <option value="la">Ladakh</option>
+              <option value="ld">Lakshadweep</option>
+              <option value="py">Puducherry</option>
+            </optgroup>
           </select>
           <Button 
             variant="default" 

@@ -68,8 +68,15 @@ export async function POST(request: Request) {
     }
 
     const wageId = `${stateId}_scraped_${Date.now()}`;
+    
+    // 4. Auto-Publish Logic
+    // If the source URL is a trusted government domain, auto-publish it. Otherwise, pending.
+    let initialStatus: 'pending_review' | 'published' = 'pending_review';
+    if (sourceUrl && (sourceUrl.includes('.gov.in') || sourceUrl.includes('.nic.in'))) {
+      initialStatus = 'published';
+    }
 
-    // 4. Insert as pending_review
+    // 5. Insert Record
     await db.insert(wages).values({
       id: wageId,
       stateId,
@@ -84,13 +91,14 @@ export async function POST(request: Request) {
       notificationDate: notificationDate ? new Date(notificationDate) : null,
       sourceUrl: sourceUrl || null,
       pdfUrl: pdfUrl || null,
-      status: 'pending_review',
+      status: initialStatus,
     });
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Wage data ingested successfully into the pending queue.',
-      id: wageId
+      message: `Wage data ingested successfully into the ${initialStatus} queue.`,
+      id: wageId,
+      status: initialStatus
     }, { status: 201 });
 
   } catch (error: any) {
